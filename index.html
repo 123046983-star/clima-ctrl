@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Clima Ctrl</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <meta name="apple-mobile-web-app-title" content="Clima Ctrl">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-mode="cool">
+  <div class="app">
+
+    <header class="header">
+      <div class="brand">
+        <img src="icon.svg" alt="" class="brand-icon">
+        <h1 class="title">Clima Ctrl</h1>
+      </div>
+      <div class="header-right">
+        <div class="status">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="status-text" id="statusText">Desconectado</span>
+        </div>
+        <button class="icon-btn" id="settingsBtn" aria-label="Ajustes" onclick="openSettings()">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <!-- Termostato -->
+      <section class="card dial-card">
+        <div class="dial" id="dial">
+          <svg viewBox="0 0 200 200" class="dial-svg">
+            <circle class="dial-bg"   cx="100" cy="100" r="84" pathLength="100"/>
+            <circle class="dial-fill" cx="100" cy="100" r="84" pathLength="100" id="dialFill"/>
+          </svg>
+          <div class="dial-center">
+            <span class="dial-label">Objetivo</span>
+            <div class="dial-row">
+              <span class="dial-value" id="setpointValue">--</span>
+              <span class="dial-unit">°C</span>
+            </div>
+            <span class="dial-state" id="acState">Sin datos</span>
+          </div>
+        </div>
+        <div class="dial-buttons">
+          <button class="round-btn" onclick="nudgeSetpoint(-1)" aria-label="Bajar">−</button>
+          <button class="power-btn" id="powerBtn" onclick="togglePower()" aria-label="Encender o apagar">
+            <svg viewBox="0 0 24 24" width="26" height="26"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M12 3v8M6.3 6.8a8 8 0 1 0 11.4 0"/></svg>
+          </button>
+          <button class="round-btn" onclick="nudgeSetpoint(1)" aria-label="Subir">+</button>
+        </div>
+      </section>
+
+      <!-- Lecturas -->
+      <section class="readings">
+        <div class="card reading">
+          <span class="reading-label">Temperatura</span>
+          <span class="reading-value"><span id="tempValue">--.-</span><small>°C</small></span>
+        </div>
+        <div class="card reading">
+          <span class="reading-label">Humedad</span>
+          <span class="reading-value"><span id="humValue">--</span><small>%</small></span>
+        </div>
+      </section>
+
+      <!-- Modo -->
+      <section class="card">
+        <div class="section-title">Modo</div>
+        <div class="segmented" id="modeGroup">
+          <button data-mode="auto" onclick="setMode('auto')">Auto</button>
+          <button data-mode="cool" onclick="setMode('cool')">Frío</button>
+          <button data-mode="heat" onclick="setMode('heat')">Calor</button>
+          <button data-mode="dry"  onclick="setMode('dry')">Seco</button>
+          <button data-mode="fan"  onclick="setMode('fan')">Ventilar</button>
+        </div>
+      </section>
+
+      <!-- Ventilador -->
+      <section class="card">
+        <div class="section-title">Ventilador</div>
+        <div class="slider-wrapper" id="fanWrapper">
+          <div class="slider-track"><div class="slider-fill" id="fanFill"></div></div>
+          <div class="slider-steps">
+            <button class="step" data-fan="auto" onclick="setFan('auto')"><div class="step-dot"></div><span class="step-label">AUTO</span></button>
+            <button class="step" data-fan="1" onclick="setFan(1)"><div class="step-dot"></div><span class="step-label">1</span></button>
+            <button class="step" data-fan="2" onclick="setFan(2)"><div class="step-dot"></div><span class="step-label">2</span></button>
+            <button class="step" data-fan="3" onclick="setFan(3)"><div class="step-dot"></div><span class="step-label">3</span></button>
+          </div>
+        </div>
+        <label class="switch-row">
+          <span>Oscilación (swing)</span>
+          <input type="checkbox" id="swingInput" onchange="setSwing(this.checked)">
+          <span class="switch"></span>
+        </label>
+      </section>
+
+      <!-- Historial -->
+      <section class="card">
+        <div class="section-title">
+          Últimos 10 min
+          <span class="legend"><i class="lg-temp"></i>Temp. <i class="lg-set"></i>Objetivo</span>
+        </div>
+        <canvas id="chart" height="120"></canvas>
+      </section>
+
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <footer class="footer">
+      <button class="connect-btn" id="connectBtn" onclick="toggleConnect()">Conectar</button>
+      <div id="installPrompt" hidden>
+        <button class="install-btn" id="installBtn">Instalar app</button>
+      </div>
+    </footer>
+
+    <!-- Ajustes -->
+    <dialog class="sheet" id="settingsSheet">
+      <form method="dialog" class="sheet-body" onsubmit="saveSettings()">
+        <h2>Conexión MQTT</h2>
+        <label>Broker <input id="cfgBroker" required></label>
+        <label>Puerto (WSS) <input id="cfgPort" type="number" required></label>
+        <label>Ruta <input id="cfgPath" required></label>
+        <label>ID del equipo <input id="cfgDevice" required></label>
+        <p class="hint">Telemetría: <code id="hintTele"></code><br>Comandos: <code id="hintCmd"></code></p>
+        <div class="sheet-actions">
+          <button type="button" class="install-btn" onclick="closeSettings()">Cancelar</button>
+          <button type="submit" class="connect-btn">Guardar</button>
+        </div>
+      </form>
+    </dialog>
+
+  </div>
+
+  <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .catch(err => console.warn('SW error:', err))
+      })
+    }
+  </script>
+</body>
+</html>

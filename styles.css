@@ -1,0 +1,272 @@
+:root {
+  --bg:        #0b1220;
+  --surface:   #121b2d;
+  --surface2:  #1a2640;
+  --border:    #233150;
+  --text:      #e8eefb;
+  --muted:     #8a9bbd;
+  --connected: #22c55e;
+  --error:     #ef4444;
+  --accent:    #38bdf8;   /* cambia según el modo */
+  --accent-rgb: 56, 189, 248;
+  --radius:    16px;
+}
+
+body[data-mode="heat"] { --accent: #fb923c; --accent-rgb: 251, 146, 60; }
+body[data-mode="auto"] { --accent: #a78bfa; --accent-rgb: 167, 139, 250; }
+body[data-mode="dry"]  { --accent: #2dd4bf; --accent-rgb: 45, 212, 191; }
+body[data-mode="fan"]  { --accent: #94a3b8; --accent-rgb: 148, 163, 184; }
+body.off               { --accent: #475569; --accent-rgb: 71, 85, 105; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: radial-gradient(120% 60% at 50% 0%, rgba(var(--accent-rgb), 0.12), transparent 60%), var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  transition: background 0.4s;
+  overflow-x: hidden;
+}
+
+button { font: inherit; color: inherit; }
+
+.app {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+}
+
+/* ── Header ─────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(20px + env(safe-area-inset-top, 0)) 0 14px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-icon { width: 26px; height: 26px; }
+.title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.header-right { display: flex; align-items: center; gap: 12px; }
+.status { display: flex; align-items: center; gap: 8px; }
+.status-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--error);
+  transition: background 0.3s;
+}
+.status-dot.connected { background: var(--connected); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.35; } }
+.status-text { font-size: 0.78rem; color: var(--muted); }
+.icon-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+/* ── Main ───────────────────────────────────── */
+.main { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 4px 0 12px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+}
+
+/* Termostato */
+.dial-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 22px; }
+.dial { position: relative; width: 230px; height: 230px; pointer-events: none; }
+.dial-svg { width: 100%; height: 100%; transform: rotate(135deg); }
+.dial-bg, .dial-fill {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+}
+.dial-bg   { stroke: var(--surface2); stroke-dasharray: 75 100; }
+.dial-fill {
+  stroke: var(--accent);
+  stroke-dasharray: 0 100;
+  filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.55));
+  transition: stroke-dasharray 0.25s ease, stroke 0.4s;
+}
+.dial-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.dial-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
+.dial-row { display: flex; align-items: flex-start; gap: 2px; }
+.dial-value {
+  font-size: 4.6rem; font-weight: 700; line-height: 1.05;
+  font-variant-numeric: tabular-nums; letter-spacing: -2px;
+  color: var(--text);
+}
+.dial-unit { font-size: 1.5rem; color: var(--muted); margin-top: 10px; }
+.dial-state { font-size: 0.82rem; color: var(--accent); font-weight: 600; transition: color 0.4s; }
+
+.dial-buttons { display: flex; align-items: center; gap: 26px; margin-top: -18px; position: relative; z-index: 1; }
+.round-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  font-size: 1.6rem; line-height: 1; cursor: pointer;
+  transition: transform 0.1s, border-color 0.2s;
+}
+.round-btn:active { transform: scale(0.94); border-color: var(--accent); }
+.power-btn {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--surface2);
+  color: var(--muted); display: grid; place-items: center; cursor: pointer;
+  transition: all 0.25s;
+}
+.power-btn.on {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+  box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.5);
+}
+.pending { animation: blink 0.9s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: 0.5; } }
+
+/* Lecturas */
+.readings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.reading { display: flex; flex-direction: column; gap: 6px; }
+.reading-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.reading-value { font-size: 1.9rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.reading-value small { font-size: 0.95rem; color: var(--muted); font-weight: 400; margin-left: 2px; }
+
+/* Modo */
+.segmented { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.segmented button {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 10px 0;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface2); color: var(--muted);
+  font-size: 0.8rem; font-weight: 500; cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.segmented button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Ventilador (mismo estilo de pasos que el blower) */
+.slider-wrapper { position: relative; transition: opacity 0.2s; }
+.slider-wrapper.disabled { opacity: 0.35; pointer-events: none; }
+.slider-track {
+  position: absolute; left: 12.5%; right: 12.5%; top: 13px;
+  height: 2px; background: var(--border); border-radius: 2px;
+}
+.slider-fill { height: 100%; width: 0; background: var(--accent); border-radius: 2px; transition: width 0.22s ease; }
+.slider-steps { display: flex; justify-content: space-between; position: relative; }
+.step {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background: none; border: none; cursor: pointer; padding: 4px 0 0;
+}
+.step-dot {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--surface);
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.step.active .step-dot {
+  background: var(--accent); border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
+}
+.step-label { font-size: 0.68rem; color: var(--muted); font-weight: 500; }
+.step.active .step-label { color: var(--accent); }
+
+/* Interruptor */
+.switch-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border);
+  font-size: 0.88rem; cursor: pointer;
+}
+.switch-row input { display: none; }
+.switch {
+  width: 44px; height: 26px; border-radius: 13px;
+  background: var(--surface2); border: 1px solid var(--border);
+  position: relative; transition: background 0.2s;
+}
+.switch::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 18px; height: 18px; border-radius: 50%; background: var(--muted);
+  transition: transform 0.2s, background 0.2s;
+}
+.switch-row input:checked + .switch { background: var(--accent); border-color: var(--accent); }
+.switch-row input:checked + .switch::after { transform: translateX(18px); background: #fff; }
+.switch-row input:disabled + .switch { opacity: 0.4; }
+
+/* Gráfica */
+#chart { width: 100%; height: 120px; display: block; }
+.legend { display: flex; align-items: center; gap: 6px; text-transform: none; letter-spacing: 0; }
+.legend i { display: inline-block; width: 14px; height: 2px; margin-left: 6px; }
+.lg-temp { background: var(--accent); }
+.lg-set  { border-top: 2px dashed var(--muted); height: 0 !important; }
+
+/* ── Footer ─────────────────────────────────── */
+.footer { padding: 12px 0 24px; display: flex; flex-direction: column; gap: 10px; }
+.connect-btn {
+  width: 100%; padding: 15px; border: none; border-radius: var(--radius);
+  background: var(--accent); color: #fff;
+  font-size: 1rem; font-weight: 600; letter-spacing: 0.03em; cursor: pointer;
+  transition: background 0.3s, transform 0.1s;
+}
+.connect-btn:active { transform: scale(0.98); }
+.connect-btn.connected { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
+.install-btn {
+  width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: transparent; color: var(--muted); font-size: 0.85rem; cursor: pointer;
+}
+
+/* ── Ajustes ────────────────────────────────── */
+.sheet {
+  margin: auto; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); color: var(--text);
+  width: min(440px, calc(100vw - 32px));
+}
+.sheet::backdrop { background: rgba(0, 0, 0, 0.6); }
+.sheet-body { display: flex; flex-direction: column; gap: 12px; padding: 20px; }
+.sheet h2 { font-size: 1rem; }
+.sheet label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--muted); }
+.sheet input {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); padding: 10px; font-size: 0.9rem;
+}
+.hint { font-size: 0.72rem; color: var(--muted); line-height: 1.6; }
+.hint code { color: var(--text); word-break: break-all; }
+.sheet-actions { display: flex; gap: 8px; }
+.sheet-actions button { padding: 12px; }
+
+/* ── Toast ──────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 100px; left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: rgba(15, 22, 38, 0.96); border: 1px solid var(--border);
+  color: var(--text); padding: 10px 20px; border-radius: 24px; font-size: 0.82rem;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s;
+  z-index: 100; white-space: nowrap;
+}
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
